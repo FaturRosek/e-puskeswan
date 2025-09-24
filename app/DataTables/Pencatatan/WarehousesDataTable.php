@@ -1,0 +1,91 @@
+<?php
+
+namespace App\DataTables\Pencatatan;
+
+
+use Yajra\DataTables\Html\Button;
+use Yajra\DataTables\Html\Column;
+use Yajra\DataTables\EloquentDataTable;
+use Yajra\DataTables\Html\Editor\Editor;
+use Yajra\DataTables\Html\Editor\Fields;
+use Yajra\DataTables\Services\DataTable;
+use App\Models\Pencatatan\Warehouse;
+use Yajra\DataTables\Html\Builder as HtmlBuilder;
+use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+
+class WarehousesDataTable extends DataTable
+{
+    /**
+     * Build the DataTable class.
+     *
+     * @param QueryBuilder $query Results from query() method.
+     */
+    public function dataTable(QueryBuilder $query): EloquentDataTable
+    {
+        return (new EloquentDataTable($query))
+            ->addColumn('action', 'Warehouse.action')
+            ->addIndexColumn()
+            ->addColumn('action', function (Warehouse $row) {
+                return view('pages.admin.pencatatan.Warehouse.action', ['gudang' => $row]);
+            })
+            ->rawColumns(['action'])
+            ->setRowId('id');
+    }
+
+    /**
+     * Get the query source of dataTable.
+     */
+    public function query(Warehouse $model): QueryBuilder
+    {
+        return $model->newQuery();
+    }
+
+    /**
+     * Optional method if you want to use the html builder.
+     */
+    public function html(): HtmlBuilder
+    {
+        return $this->builder()
+            ->setTableId('warehouse-table')
+            ->columns($this->getColumns())
+            ->minifiedAjax(script: "
+                                data._token = '" . csrf_token() . "';
+                                data._p = 'POST';
+                            ")
+            ->dom('rt' . "<'row'<'col-sm-12 col-md-5'l><'col-sm-12 col-md-7'p>>")
+            ->addTableClass('table align-middle table-row-dashed  gy-5 dataTable no-footer text-gray-600 fw-semibold')
+            ->setTableHeadClass('text-start text-muted fw-bold  text-uppercase gs-0')
+            ->language(url('json/lang.json'))
+            ->drawCallbackWithLivewire(file_get_contents(public_path('/assets/js/dataTables/drawCallback.js')))
+            ->orderBy(2)
+            ->select(false)
+            ->buttons([]);
+    }
+
+    /**
+     * Get the dataTable columns definition.
+     */
+    public function getColumns(): array
+    {
+        return [
+            Column::computed('DT_RowIndex')
+                ->title('No.')
+                ->width(20),
+            Column::make('warehouse_name')->title('Nama Gudang'),
+            Column::make('location')->title('Lokasi'),
+            Column::computed('action')
+                ->exportable(false)
+                ->printable(false)
+                ->width(60)
+                ->addClass('text-center'),
+        ];
+    }
+
+    /**
+     * Get the filename for export.
+     */
+    protected function filename(): string
+    {
+        return 'Warehouse_' . date('YmdHis');
+    }
+}
