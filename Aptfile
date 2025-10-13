@@ -1,3 +1,7 @@
-libzip-dev
 libpng-dev
+libjpeg-dev
+libfreetype6-dev
+libzip-dev
+libonig-dev
+libxml2-dev
 default-mysql-client
