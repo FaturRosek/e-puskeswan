@@ -1,8 +1,0 @@
-[build]
-builder = "nixpacks"
-
-[variables]
-NIXPACKS_PKGS = "php phpExtensions.zip phpExtensions.gd phpExtensions.pdo_mysql phpExtensions.mbstring phpExtensions.tokenizer phpExtensions.xml phpExtensions.curl phpExtensions.fileinfo"
-
-[start]
-cmd = "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
