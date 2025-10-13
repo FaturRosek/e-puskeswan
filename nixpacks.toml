@@ -1,2 +1,15 @@
+[build]
+builder = "heroku/php"
+
 [phases.setup]
-nixPkgs = ["php", "phpExtensions.zip", "phpExtensions.gd", "phpExtensions.pdo_mysql"]
+nixPkgs = [
+  "php",
+  "phpExtensions.zip",
+  "phpExtensions.gd",
+  "phpExtensions.pdo_mysql",
+  "phpExtensions.mbstring",
+  "phpExtensions.tokenizer",
+  "phpExtensions.xml",
+  "phpExtensions.curl",
+  "phpExtensions.fileinfo"
+]
