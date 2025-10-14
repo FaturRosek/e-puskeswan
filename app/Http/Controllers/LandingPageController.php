@@ -9,7 +9,7 @@ use App\Models\Setting\Contact;
 use App\Models\Setting\Statistik;
 use App\Models\Setting\VeterinaryProfile;
 use Illuminate\Http\Request;
-use App\Models\master\Puskeswan;
+use App\Models\Master\Puskeswan;
 
 class LandingPageController extends Controller
 {
