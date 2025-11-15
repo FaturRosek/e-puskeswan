@@ -16,13 +16,13 @@ class LandingPageController extends Controller
 
     public function index()
     {
-        // $news = News::all();
+        $news = News::all();
         $beranda = Beranda::all();
         $profile = VeterinaryProfile::all();
         $puskeswans = Puskeswan::all();
         $pengumuman = Announcement::all();
         $contact = Contact::all();
         $statistik = Statistik::all();
-        return view('pages.landing.index', compact('beranda', 'profile', 'puskeswans', 'pengumuman', 'contact', 'statistik'));
+        return view('pages.landing.index', compact('news', 'contact', 'profile', 'puskeswans', 'beranda', 'pengumuman', 'statistik'));
     }
 }
