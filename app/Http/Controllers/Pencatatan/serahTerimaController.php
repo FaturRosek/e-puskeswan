@@ -31,8 +31,18 @@ class serahTerimaController extends Controller
 {
     public function index()
     {
-        $userId = Auth::id();
-        $serahTerima = GoodsHandover::where('user_id', $userId)->get();
+        $user = Auth::user();
+
+        if ($user->role_id == 1) {
+            // Admin: tampilkan semua data serah terima
+            $serahTerima = GoodsHandover::orderBy('created_at', 'DESC')->get();
+        } else {
+            // Puskeswan (role 2): hanya tampilkan data miliknya
+            $serahTerima = GoodsHandover::where('user_id', $user->id)
+                ->orderBy('created_at', 'DESC')
+                ->get();
+        }
+
         return view('pages.admin.pencatatan.GoodsHandover.index', compact('serahTerima'));
     }
 
@@ -58,7 +68,8 @@ class serahTerimaController extends Controller
             'procurement_id.*' => 'required|exists:procurements,id',
             'goods_amount.*' => 'required|integer|min:1',
             'tgl_exp_date.*' => 'nullable|date',
-            'user_id' => 'required|exists:users,id',
+            // penerima bisa null jika penerima diisi manual via nama_penerima (dropdown di-disable oleh JS)
+            'penerima' => 'nullable|exists:users,id',
             'nama_penerima' => 'nullable|string',
         ]);
 
@@ -66,12 +77,13 @@ class serahTerimaController extends Controller
         $fileBastPath = $fileBast ? $fileBast->store('bast_files', 'public') : null;
 
         DB::transaction(function () use ($request, $fileBastPath) {
+            // user_id = ID puskeswan penerima jika dipilih dari dropdown, null jika diisi manual
             $goodshandover = GoodsHandover::create([
                 'date_received' => $request->date_received,
                 'no_bast' => $request->no_bast,
-                'file_bast' => $fileBastPath,
-                'description' => $request->description,
-                'user_id' => $request->user_id
+                'file_bast' => $fileBastPath ?? '',
+                'description' => $request->description ?? '',
+                'user_id' => $request->penerima ?? null
             ]);
 
             $pengirim = Pengirim::create([
@@ -103,8 +115,8 @@ class serahTerimaController extends Controller
 
             $penerima = Penerima::create($penerimaData);
 
-            $namaPenerima = $request->nama_penerima ?: User::find($request->penerima)->name;
-            $namaPengirim = User::find($request->pengirim)->name;
+            $namaPenerima = $request->nama_penerima ?: optional(User::find($request->penerima))->name ?? '';
+            $namaPengirim = optional(User::find($request->pengirim))->name ?? '';
 
             $detailsData = [];
             $pencatatanMasuk = [];

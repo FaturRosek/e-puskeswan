@@ -13,7 +13,7 @@
                             <label for="date_received" class="form-label">Tangal Diterima</label>
                             <input type="date" class="form-control" id="date_received" name="date_received">
                         </div>
-                        <input type="hidden" name="user_id" value="{{ auth()->user()->id }}">
+                        {{-- user_id diambil dari field 'penerima' (dropdown puskeswan) di controller --}}
                         <div class="col">
                             <label for="BAST_number" class="form-label">No BAST</label>
                             <input type="text" class="form-control" id="no_bast" name="no_bast" placeholder="No BAST">
@@ -205,9 +205,24 @@
             var goods_amount = $('#goods_amount').val();
             var tgl_exp_date = $('#tgl_exp_date').val();
 
-            var goods_name = barang.find(item => item.id == goods_id).goods_name;
-            var unit_type = satuan.find(item => item.id == unit_id).unit_type;
-            var procurement_type = pengadaan.find(item => item.id == procurement_id).procurement_type;
+            // Validasi: semua field harus diisi sebelum tambah ke tabel
+            if (!goods_id || !unit_id || !procurement_id || !goods_amount) {
+                alert('Harap pilih Barang, Satuan, Pengadaan, dan isi Jumlah terlebih dahulu!');
+                return;
+            }
+
+            var barangItem = barang.find(item => item.id == goods_id);
+            var satuanItem = satuan.find(item => item.id == unit_id);
+            var pengadaanItem = pengadaan.find(item => item.id == procurement_id);
+
+            if (!barangItem || !satuanItem || !pengadaanItem) {
+                alert('Data barang tidak ditemukan, silakan refresh halaman.');
+                return;
+            }
+
+            var goods_name = barangItem.goods_name;
+            var unit_type = satuanItem.unit_type;
+            var procurement_type = pengadaanItem.procurement_type;
 
             let number = $('#handover tr').length + 1;
             let no = `<td>${number}</td>`;
@@ -218,28 +233,25 @@
             let procurementInput =
                 `<td><input type="hidden" name="procurement_id[]" value="${procurement_id}"> ${procurement_type} </td>`;
             let amountInput =
-                `<td><input type="number" name="goods_amount[]" value="${goods_amount}" class="form-control"> </td>`;
+                `<td><input type="number" name="goods_amount[]" value="${goods_amount}" min="1" class="form-control"> </td>`;
             let expdateInput =
                 `<td><input type="date" name="tgl_exp_date[]" value="${tgl_exp_date}" class="form-control"></td>`;
             let actionInput =
-                `<td><button type="button" class="btn btn-danger remove-row"><i
-                                class="ti ti-trash fs-4"></i></button></td>`;
+                `<td><button type="button" class="btn btn-danger remove-row"><i class="ti ti-trash fs-4"></i></button></td>`;
 
             $('#handover').append(
                 `<tr>${no + goodsInput + unitInput + procurementInput + amountInput + expdateInput + actionInput}</tr>`
             );
-
-            // Add event listener to remove row
-            $('.remove-row').click(function() {
-                $(this).closest('tr').remove();
-            });
         });
 
-        function updatenomer() {
+        // Event delegation: pasang listener SEKALI di parent #handover, bukan di setiap tombol
+        $('#handover').on('click', '.remove-row', function() {
+            $(this).closest('tr').remove();
+            // Update nomor urut setelah hapus
             $('#handover tr').each(function(index) {
                 $(this).find('td:first').text(index + 1);
             });
-        }
+        });
     });
 
     document.addEventListener('DOMContentLoaded', function() {
